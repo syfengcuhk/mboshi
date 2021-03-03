@@ -1,0 +1,71 @@
+#!/bin/bash
+cmd="run.pl"
+nj=1
+stage=0
+stop_stage=1
+num_threads_decode=1
+post_decode_acwt=10.0
+acwt=10.0
+decode_nj=1
+ctm_format=false
+hires_conf_set=aidatatang
+suffix="_200zh" # aidatatang_200zh is the full name of egs recipe
+model=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/kaldi/egs/aidatatang_200zh/s5/exp/chain/tdnn_1a_sp
+gmm_model=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/kaldi/egs/aidatatang_200zh/s5/exp/tri5a
+ood_model_suffix=""
+align_fmllr_stage=0
+. ./utils/parse_options.sh
+. ./path.sh
+data_dir_name=data_hires_pitch_conf_${hires_conf_set}
+data_dir_name_nopitch=data_hires_conf_${hires_conf_set}
+
+graph_dir=$model/graph
+ivector_extractor=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/kaldi/egs/${hires_conf_set}${suffix}/s5/exp/nnet3/extractor
+if [ $stage -le -1 ] && [ $stop_stage -gt -1 ];then
+    for set in  train dev; do
+        steps/make_mfcc.sh  --nj $nj data/$set || exit 1;
+        steps/compute_cmvn_stats.sh data/$set || exit 1;
+    done
+    utils/combine_data.sh data/full data/train data/dev || exit 1;
+fi
+
+if [ $stage -le 0 ] && [ $stop_stage -gt 0 ];then
+    for set in  train dev; do
+        utils/copy_data_dir.sh data/$set ${data_dir_name}/$set || exit 1;
+        steps/make_mfcc_pitch.sh --mfcc-config conf/mfcc_hires_from_${hires_conf_set}.conf --nj $nj ${data_dir_name}/$set || exit 1;
+        steps/compute_cmvn_stats.sh ${data_dir_name}/$set || exit 1;
+    done
+    utils/combine_data.sh $data_dir_name/full $data_dir_name/train $data_dir_name/dev
+fi
+
+if [ $stage -le 1 ] && [ $stop_stage -gt 1 ];then
+   echo "$0: extracting ivectors"
+   data_root_path_nopitch=$data_dir_name_nopitch
+   for set in train dev full; do
+      input_data=$data_root_path_nopitch/$set
+      if [ ! -d $input_data ]; then
+          echo "$0: first compose High Resolution MFCC Without pitch"
+          utils/data/limit_feature_dim.sh 0:39 $data_dir_name/$set $input_data || exit 1;
+          steps/compute_cmvn_stats.sh $input_data || exit 1;
+      fi
+      output_data=$ivector_extractor/../ivectors${ood_model_suffix}_mboshi_hires/$set
+      steps/online/nnet2/extract_ivectors_online.sh --nj $nj \
+         $input_data $ivector_extractor $output_data || exit 1;
+   done
+fi
+
+if [ $stage -le 2 ] && [ $stop_stage -gt 2 ];then
+  echo "$0: decoding mboshi speech data with OOD ASR $hires_conf_set "
+  data_root_path=$data_dir_name
+  for set in dev train full; do
+    input_data=$data_root_path/$set
+    nspk=$(wc -l <$input_data/spk2utt)
+    [ "$nspk" -gt "$nj" ] && nspk=$decode_nj
+    decoding_dir=$model/decoding_for_mboshi_${set}_acwt${acwt}
+    input_ivec_dir=$ivector_extractor/../ivectors${ood_model_suffix}_mboshi_hires/$set
+    steps/nnet3/decode.sh --num-threads $num_threads_decode --nj $nspk \
+      --cmd "run.pl" --online-ivector-dir $input_ivec_dir \
+      --skip-scoring true --acwt ${acwt} --post-decode-acwt ${post_decode_acwt} \
+      $graph_dir $input_data $decoding_dir || exit 1; 
+  done
+fi

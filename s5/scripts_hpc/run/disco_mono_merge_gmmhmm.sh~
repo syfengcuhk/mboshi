@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Similar to mono_gmmhmm.sh, but merge 5 versions of Discophone GP monolingual phone transcripts, and train a GMM-HMM. Do not include Babel, because their crosslingual transcripts are not reliable
+LMTYPE=phn_ug_mono
+beam=10
+retry_beam=40
+stage=0
+stop_stage=500
+train_nj=2
+phone_tokens=false
+disco_acwt=10.0
+# Acoustic model parameters
+numLeavesTri1=2000 #1000
+numGaussTri1=25000 #10000
+#numLeavesTri2=1000
+#numGaussTri2=20000
+#numLeavesTri3=6000
+#numGaussTri3=75000
+numLeavesMLLT=2000
+numGaussMLLT=25000
+numLeavesSAT=2000
+numGaussSAT=25000
+ctm_format=false
+cmd="run.pl"
+lang_name_suffix="_GP"
+full_train_set=full
+discophone_root=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/kaldi/egs/discophone/v1_multilang_phones_lms
+data_suffix=_collapse_ali # by default, then data dir uses text from lattice-best-path ali, see last stage of disco_multi_labeling.sh 
+. cmd.sh
+. utils/parse_options.sh
+. path.sh
+lang_name=merge_transcript${lang_name_suffix}
+expdir_root=exp/gmm_discophone_label${data_suffix}/${lang_name}_${LMTYPE}/$full_train_set
+lang=$discophone_root/data/lang_combined_test
+data_dir=data_plus_discophone_transcripts${data_suffix}/prefixed/${lang_name}_${LMTYPE}/acwt${disco_acwt}/$full_train_set
+
+if [ $stage -le 6 ] && [ $stop_stage -gt 6 ]; then
+# to do: merge 5/13 languages data/ dir and get into 5 times the amount of labeled speech
+# 1st add language prefix
+  data_root_add_prefix=data_plus_discophone_transcripts${data_suffix}/prefixed/
+  mkdir -p $data_root_add_prefix || exit 1
+  for gp_lang in Czech French Spanish Mandarin Thai; do
+    utils/copy_data_dir.sh --spk-prefix "${gp_lang}-" --utt-prefix "${gp_lang}-" data_plus_discophone_transcripts${data_suffix}/gp_${gp_lang}_train_${LMTYPE}/acwt${disco_acwt}/$full_train_set $data_root_add_prefix/gp_${gp_lang}_train_${LMTYPE}/acwt${disco_acwt}/$full_train_set
+  done
+  utils/combine_data.sh $data_dir $data_root_add_prefix/gp_Czech_train_${LMTYPE}/acwt${disco_acwt}/$full_train_set $data_root_add_prefix/gp_French_train_${LMTYPE}/acwt${disco_acwt}/$full_train_set $data_root_add_prefix/gp_Spanish_train_${LMTYPE}/acwt${disco_acwt}/$full_train_set $data_root_add_prefix/gp_Mandarin_train_${LMTYPE}/acwt${disco_acwt}/$full_train_set $data_root_add_prefix/gp_Thai_train_${LMTYPE}/acwt${disco_acwt}/$full_train_set 
+fi
+
+if [ $stage -le 7 ] && [ $stop_stage -gt 7 ]; then
+  steps/train_mono.sh \
+    --nj $train_nj --cmd "$train_cmd" \
+    $data_dir \
+    $lang $expdir_root/mono || exit 1;
+fi
+
+
