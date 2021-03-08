@@ -427,3 +427,65 @@ if [ $stage -le 26 ] && [ $stop_stage -gt 26 ]; then
   cd $cwd
   
 fi
+ # below we show that using a golden phone segmentation boundary information, performance of our segment clustering
+
+if [ $stage -le 27 ] && [ $stop_stage -gt 27 ]; then
+  echo "segment clustering using golden phone segmentation boundary information"
+  # if feats.ark.txt not found, generate it
+  output_data=$dir/bnf_prefinal_l$post_suffix/$train_set/
+  if [ ! -f $output_data/feats.ark.txt ] ; then
+    copy-feats scp:$output_data/feats.scp ark,t:$output_data/feats.ark.txt
+  fi
+  current_path=$(pwd)
+  cd $dir/bnf_prefinal_l$post_suffix/$train_set/
+  echo "$pwd: creating symbolic link feats.ark.txt.gold_ali"
+  ln -s feats.ark.txt feats.ark.txt.gold_ali
+  cd $current_path 
+  input_data=$dir/bnf_prefinal_l$post_suffix/$train_set/feats.ark.txt.gold_ali
+  eval_code_root=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/BEER/beer/recipes/hshmm/
+  eval_set=full
+  mboshi_ref_ali_unsorted=$eval_code_root/data/mboshi/$eval_set/ali
+  cp $mboshi_ref_ali_unsorted data/ali_${eval_set}_unsorted
+  # Now we sort data/ali_${eval_set}_unsorted by using order data/$eval_set/utt2spk
+  awk 'NR==FNR{o[FNR]=$1; next} {t[$1]=$0} END{for(x=1; x<=FNR; x++){y=o[x]; print t[y]}}' data/$eval_set/utt2spk data/ali_${eval_set}_unsorted > data/ali_${eval_set}
+  mboshi_ref_ali=data/ali_${eval_set}
+  ref_segmentation=$mboshi_ref_ali #$ali_dir/../tri5_phone_ali_linked/phone_ali.ali
+  source activate beer # hdbscan package installed under (beer)
+  python scripts_hpc/run/clustering_kaldi_segment_input.py $input_data $nj_clustering $rand_state $nclusters $clustering_algo $ref_segmentation $segment_subsampling_flag
+  source deactivate
+fi
+if [ $stage -le 28 ]  && [ $stop_stage -gt 28 ] ; then
+  echo "evaluation AUD on k-means + bnf, segment clustering"
+  eval_set=full
+  if [ ! $eval_set = $train_set ]; then
+    echo "$0: only full set evaluation supported "
+    exit 1;
+  fi
+  output_dir=$dir/bnf_prefinal_l$post_suffix/$train_set/ #$dir/phone_post/$train_set  #phone_post_1hot_sym.txt
+  #output_dir=$expdir_root/tri5_phone_ali${suffix}
+  hyp_trans=$output_dir/output_feats.ark.txt.gold_ali${clustering_suffix} #$output_dir/phone_post_1hot_sym.txt
+  if $max_vote; then
+    hyp_trans=${hyp_trans}_maxvote${max_vote_threshold}
+    max_vote_suffix="_maxvote${max_vote_threshold}"
+  fi
+  if [ ! -f $hyp_trans ]; then
+    echo "$0: $hyp_trans not found";
+    exit 1;
+  fi
+  eval_code_root=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/BEER/beer/recipes/hshmm/
+  mboshi_ref_ali=$eval_code_root/data/mboshi/$eval_set/ali
+  len_hyp=$(wc -l $hyp_trans | cut -d ' ' -f 1 )
+  len_ref=$(wc -l $mboshi_ref_ali | cut -d ' ' -f 1)
+  if [ ! $len_hyp = $len_ref  ]; then
+    echo "exit because not all utterances in $eval_set have hyp transcripts"
+    exit 1;
+  fi
+  source activate beer
+  cwd=$(pwd)
+  cd $eval_code_root
+  bash $eval_code_root/steps/score_aud.sh $mboshi_ref_ali $cwd/$hyp_trans $cwd/$output_dir/score_aud_gold_ali${clustering_suffix}${max_vote_suffix}
+  source deactivate
+  cd $cwd
+fi
+
+echo "succeeded"
