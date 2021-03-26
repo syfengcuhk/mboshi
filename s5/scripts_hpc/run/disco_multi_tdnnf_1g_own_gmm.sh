@@ -200,7 +200,7 @@ else
   post_suffix=""
 fi
 if [ $stage -le 19 ]  && [ $stop_stage -gt 19 ] ; then
-  #To do: generate BNF from prefinal-l
+  # generate BNF from prefinal-l
   bnf_name="prefinal-l"
   output_data=$dir/bnf_prefinal_l$post_suffix/$train_set/
   input_data=$train_data_dir
@@ -438,8 +438,10 @@ if [ $stage -le 27 ] && [ $stop_stage -gt 27 ]; then
   fi
   current_path=$(pwd)
   cd $dir/bnf_prefinal_l$post_suffix/$train_set/
-  echo "$pwd: creating symbolic link feats.ark.txt.gold_ali"
-  ln -s feats.ark.txt feats.ark.txt.gold_ali
+  if [ ! -f feats.ark.txt.gold_ali ]; then 
+    echo "$pwd: creating symbolic link feats.ark.txt.gold_ali"
+    ln -s feats.ark.txt feats.ark.txt.gold_ali
+  fi
   cd $current_path 
   input_data=$dir/bnf_prefinal_l$post_suffix/$train_set/feats.ark.txt.gold_ali
   eval_code_root=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/BEER/beer/recipes/hshmm/
