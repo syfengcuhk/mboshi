@@ -9,6 +9,7 @@ Databases:
 Evaluation: Mboshi, freely available for academic use.
 Training: Globalphone 5 languages (Czech, French, Spanish, Mandarin and Thai), 8 Babel languages (Cantonese, Bengali, Vietnamese, Lao, Zulu, Amharic, Javanese and Georgian). Please note that GlobalPhone and IARPA BABEL Language resources are *NOT* freely available.
 
+
 Evaluation metrics:
 (1) Normalized mutual information (NMI): a measure of clustering quality
 (2) F-score: a measure of segmentation quality
