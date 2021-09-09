@@ -7,7 +7,7 @@ Unsupervised acoustic unit discovery
 
 Databases:
 Evaluation: Mboshi, freely available for academic use.
-Training: Globalphone 5 languages (Czech, French, Spanish, Mandarin and Thai), 8 Babel languages (Cantonese, Bengali, Vietnamese, Lao, Zulu, Amharic, Javanese and Georgian). Please note that GlobalPhone and IARPA BABEL Language resources are *NOT* freely available.
+Training: Globalphone 5 languages (Czech, French, Spanish, Mandarin and Thai), 8 Babel languages (Cantonese, Bengali, Vietnamese, Lao, Zulu, Amharic, Javanese and Georgian). Please note that GlobalPhone and IARPA BABEL Language resources are *NOT* freely available. Also note that the training of phone-level multilingual ASR systems with 5 or 13 GP & Babel languages is not included here, please refer to https://github.com/pzelasko/kaldi/tree/discophone/egs/discophone and paper: Feng et al. ICASSP 2021 "HOW PHONOTACTICS AFFECT MULTILINGUAL AND ZERO-SHOT ASR PERFORMANCE" for details of building phone-level (IPA) multilingual ASR systems.
 
 
 Evaluation metrics:
