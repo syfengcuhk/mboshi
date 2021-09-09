@@ -1,6 +1,6 @@
-This repo contains code used to implement models used in a paper submitted to INTERSPEECH 2021.
+This repo contains code used to implement models used in our INTERSPEECH 2021 paper:
 
-S. Feng, P. \.Zelasko, L. Moro{-}Vel{\'{a}}zquez and O. Scharenborg, "Unsupervised Acoustic Unit Discovery by Leveraging a Language-independent Subword Discriminative Feature Representation", submitted to INTERSPEECH 2021.
+S. Feng, P. \.Zelasko, L. Moro{-}Vel{\'{a}}zquez and O. Scharenborg, "Unsupervised Acoustic Unit Discovery by Leveraging a Language-independent Subword Discriminative Feature Representation", in Proc. INTERSPEECH 2021. Link: https://www.isca-speech.org/archive/pdfs/interspeech_2021/feng21_interspeech.pdf
 
 Task:
 Unsupervised acoustic unit discovery
@@ -16,7 +16,7 @@ Evaluation metrics:
 Please refer to https://github.com/beer-asr/beer ([1]) for evaluation software.
 
 See our paper for details of the approach.
-S. Feng, P. \.Zelasko, L. Moro{-}Vel{\'{a}}zquez and O. Scharenborg, "Unsupervised Acoustic Unit Discovery by Leveraging a Language-Independent Subword Discriminative Feature Representation", Submitted to INTERSPEECH 2021. Will be available on ArXiv soon.
+S. Feng, P. \.Zelasko, L. Moro{-}Vel{\'{a}}zquez and O. Scharenborg, "Unsupervised Acoustic Unit Discovery by Leveraging a Language-Independent Subword Discriminative Feature Representation", in Proc. INTERSPEECH 2021.
 
 References
 [1] B. Yusuf, L. Ondel, L. Burget, J. Cernock ́y, and M. Saraclar, “Ahierarchical  subspace  model  for  language-attuned  acoustic  unitdiscovery,” CoRR, vol. abs/2011.03115, 2020. 
