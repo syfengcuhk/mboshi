@@ -2,8 +2,11 @@ This repo contains code used to implement models used in our INTERSPEECH 2021 pa
 
 S. Feng, P. \.Zelasko, L. Moro{-}Vel{\'{a}}zquez and O. Scharenborg, "Unsupervised Acoustic Unit Discovery by Leveraging a Language-independent Subword Discriminative Feature Representation", in Proc. INTERSPEECH 2021. Link: https://www.isca-speech.org/archive/pdfs/interspeech_2021/feng21_interspeech.pdf
 
+Update on 21 Sep
+  - Support phoneme NMI evaluation on Mboshi. See s5/scripts/run/disco_multi_tdnnf_1g_own_gmm.sh.
 
-Update 16 Sep to support phone2phoneme mapping for Mboshi. See s5/references/ and s5/scripts/run/phone2phoneme_conversion.py
+Update on 16 Sep 
+  - Support phone2phoneme mapping for Mboshi. See s5/references/ and s5/scripts/run/phone2phoneme_conversion.py
 
 Task:
 Unsupervised acoustic unit discovery
@@ -18,8 +21,7 @@ Evaluation metrics:
 (2) F-score: a measure of segmentation quality
 Please refer to https://github.com/beer-asr/beer ([1]) for evaluation software.
 
-See our paper for details of the approach.
-S. Feng, P. \.Zelasko, L. Moro{-}Vel{\'{a}}zquez and O. Scharenborg, "Unsupervised Acoustic Unit Discovery by Leveraging a Language-Independent Subword Discriminative Feature Representation", in Proc. INTERSPEECH 2021.
+See our Interspeech 2021 paper for details of the approach.
 
 References
 [1] B. Yusuf, L. Ondel, L. Burget, J. Cernock ́y, and M. Saraclar, “Ahierarchical  subspace  model  for  language-attuned  acoustic  unitdiscovery,” CoRR, vol. abs/2011.03115, 2020. 
