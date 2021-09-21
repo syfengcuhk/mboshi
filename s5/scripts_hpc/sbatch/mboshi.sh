@@ -101,7 +101,7 @@ eval_from_lattice=true
 
 # Below gives a try if ivector is not used in TDNNF training, and adjustment in TDNNF config
 # Frame clustering
-bash scripts_hpc/run/disco_multi_tdnnf_1g_own_gmm.sh --use-ivector false --lang-name-suffix "" --stage 20 --stop-stage 22 --align-fmllr-lats-beam 10 --align-fmllr-lats-retry-beam 40 --nj 2 --train-stage -10 --train-exit-stage 1000 --initial-effective-lrate 0.00025 --final-effective-lrate 0.000025 --tdnn-affix "1g_lr2.5e-4" --num-epochs 20 --num-jobs-initial 2 --num-jobs-final 2 --post-model "28" --nj-clustering 16 --rand-state 4 --nclusters 50 --clustering-algo "kmeans"
+#bash scripts_hpc/run/disco_multi_tdnnf_1g_own_gmm.sh --use-ivector false --lang-name-suffix "" --stage 20 --stop-stage 22 --align-fmllr-lats-beam 10 --align-fmllr-lats-retry-beam 40 --nj 2 --train-stage -10 --train-exit-stage 1000 --initial-effective-lrate 0.00025 --final-effective-lrate 0.000025 --tdnn-affix "1g_lr2.5e-4" --num-epochs 20 --num-jobs-initial 2 --num-jobs-final 2 --post-model "28" --nj-clustering 16 --rand-state 4 --nclusters 50 --clustering-algo "kmeans"
 # Segment level clustering
 subsamp_flag=5
 nc=30
@@ -115,6 +115,14 @@ nc=30
 #for rstate in 0 1 2 3 4; do
 #  srun bash scripts_hpc/run/disco_multi_tdnnf_1g_own_gmm.sh --use-ivector false --lang-name-suffix "" --stage 27 --stop-stage 29 --align-fmllr-lats-beam 10 --align-fmllr-lats-retry-beam 40 --nj 2 --train-stage -10 --train-exit-stage 1000 --initial-effective-lrate 0.00025 --final-effective-lrate 0.000025 --tdnn-affix "1g_lr2.5e-4" --num-epochs 20 --num-jobs-initial 2 --num-jobs-final 2 --post-model "28" --nj-clustering 12 --rand-state $rstate --nclusters 50 --clustering-algo "kmeans" --segment-subsampling-flag 5
 #done
+
+# evaluated as phoneme NMI not the default, phone NMI
+n_clusters=70
+for rstate in 0 1 2 3 4; do
+  srun bash scripts_hpc/run/disco_multi_tdnnf_1g_own_gmm.sh --use-ivector false --lang-name-suffix "" --stage 27 --stop-stage 29 --align-fmllr-lats-beam 10 --align-fmllr-lats-retry-beam 40 --nj 2 --train-stage -10 --train-exit-stage 1000 --initial-effective-lrate 0.00025 --final-effective-lrate 0.000025 --tdnn-affix "1g_lr2.5e-4" --num-epochs 20 --num-jobs-initial 2 --num-jobs-final 2 --post-model "28" --nj-clustering 12 --rand-state $rstate --nclusters $n_clusters --clustering-algo "kmeans" --do-phoneme-discovery true #--segment-subsampling-flag 5
+done
+
+
 # Speed perturbed data to train TDNNF
 #srun bash scripts_hpc/run/disco_multi_tdnnf_1g_sp_own_gmm.sh --use-ivector false --lang-name-suffix "" --stage 22 --stop-stage 24  --nj 6 --align-fmllr-lats-beam 10 --align-fmllr-lats-retry-beam 40 --train-stage 0 --train-exit-stage 10000 --initial-effective-lrate 0.00025 --final-effective-lrate 0.000025 --tdnn-affix "1g_lr2.5e-4" --num-epochs 10 --num-jobs-initial 2 --num-jobs-final 2 --post-model "28" --nj-clustering 12 --rand-state 4 --nclusters 50 --clustering-algo "kmeans"
 #srun bash scripts_hpc/run/disco_multi_tdnnf_1g_sp_own_gmm.sh --use-ivector false --lang-name-suffix "_GP" --stage 22 --stop-stage 24 --nj 6 --align-fmllr-lats-beam 10 --align-fmllr-lats-retry-beam 40 --train-stage 0 --train-exit-stage 1000 --initial-effective-lrate 0.00025 --final-effective-lrate 0.000025 --tdnn-affix "1g_lr2.5e-4" --num-epochs 10 --num-jobs-initial 2 --num-jobs-final 2 --post-model "32" --nj-clustering 12 --rand-state 4 --nclusters 50 --clustering-algo "kmeans"

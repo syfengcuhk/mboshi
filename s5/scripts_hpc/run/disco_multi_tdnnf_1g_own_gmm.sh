@@ -51,6 +51,7 @@ gpu_extract_post=true
 use_ivector=true
 echo "$0 $@"  # Print the command line for logging
 lang_name_suffix="_GP"
+do_phoneme_discovery=false # if true, evaluate NMI on Mboshi reference phoneme alignment; by default is phone discovery, i.e. evaluate NMI on reference phone alignment.
 . cmd.sh
 . ./path.sh
 . ./utils/parse_options.sh
@@ -335,6 +336,14 @@ if [ $stage -le 23 ]  && [ $stop_stage -gt 23 ] ; then
   fi
   eval_code_root=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/BEER/beer/recipes/hshmm/
   mboshi_ref_ali=$eval_code_root/data/mboshi/$eval_set/ali
+  if $do_phoneme_discovery ; then
+    echo "~~~~~Caution: Now NMI being evaluated in phoneme discovery!"
+    echo "mboshi_ref_ali=references/ali_phonemes; hyp: $hyp_trans"
+    cwd=$(pwd)
+    mboshi_ref_ali=$cwd/references/ali_phonemes
+    phoneme_suffix="_phoneme_discovery"
+    echo "output: score${phoneme_suffix}_aud${clustering_suffix}${max_vote_suffix}"
+  fi
   len_hyp=$(wc -l $hyp_trans | cut -d ' ' -f 1 )
   len_ref=$(wc -l $mboshi_ref_ali | cut -d ' ' -f 1)
   if [ ! $len_hyp = $len_ref  ]; then
@@ -344,7 +353,7 @@ if [ $stage -le 23 ]  && [ $stop_stage -gt 23 ] ; then
   source activate beer
   cwd=$(pwd)
   cd $eval_code_root
-  bash $eval_code_root/steps/score_aud.sh $mboshi_ref_ali $cwd/$hyp_trans $cwd/$output_dir/score_aud${clustering_suffix}${max_vote_suffix}
+  bash $eval_code_root/steps/score_aud.sh $mboshi_ref_ali $cwd/$hyp_trans $cwd/$output_dir/score${phoneme_suffix}_aud${clustering_suffix}${max_vote_suffix}
   source deactivate
   cd $cwd
 fi
@@ -446,10 +455,13 @@ if [ $stage -le 27 ] && [ $stop_stage -gt 27 ]; then
   input_data=$dir/bnf_prefinal_l$post_suffix/$train_set/feats.ark.txt.gold_ali
   eval_code_root=/tudelft.net/staff-bulk/ewi/insy/SpeechLab/siyuanfeng/software/BEER/beer/recipes/hshmm/
   eval_set=full
+
+  if [ ! -f data/ali_${eval_set} ]; then
   mboshi_ref_ali_unsorted=$eval_code_root/data/mboshi/$eval_set/ali
   cp $mboshi_ref_ali_unsorted data/ali_${eval_set}_unsorted
   # Now we sort data/ali_${eval_set}_unsorted by using order data/$eval_set/utt2spk
   awk 'NR==FNR{o[FNR]=$1; next} {t[$1]=$0} END{for(x=1; x<=FNR; x++){y=o[x]; print t[y]}}' data/$eval_set/utt2spk data/ali_${eval_set}_unsorted > data/ali_${eval_set}
+  fi
   mboshi_ref_ali=data/ali_${eval_set}
   ref_segmentation=$mboshi_ref_ali #$ali_dir/../tri5_phone_ali_linked/phone_ali.ali
   source activate beer # hdbscan package installed under (beer)
@@ -478,6 +490,14 @@ if [ $stage -le 28 ]  && [ $stop_stage -gt 28 ] ; then
   mboshi_ref_ali=$eval_code_root/data/mboshi/$eval_set/ali
   len_hyp=$(wc -l $hyp_trans | cut -d ' ' -f 1 )
   len_ref=$(wc -l $mboshi_ref_ali | cut -d ' ' -f 1)
+  if $do_phoneme_discovery ; then
+    echo "~~~~~Caution: Now NMI being evaluated in phoneme discovery!"
+    echo "mboshi_ref_ali=references/ali_phonemes; hyp: $hyp_trans"
+    cwd=$(pwd)
+    mboshi_ref_ali=$cwd/references/ali_phonemes
+    phoneme_suffix="_phoneme_discovery"
+    echo "output: score${phoneme_suffix}_aud_gold_ali${clustering_suffix}${max_vote_suffix}"
+  fi
   if [ ! $len_hyp = $len_ref  ]; then
     echo "exit because not all utterances in $eval_set have hyp transcripts"
     exit 1;
@@ -485,7 +505,7 @@ if [ $stage -le 28 ]  && [ $stop_stage -gt 28 ] ; then
   source activate beer
   cwd=$(pwd)
   cd $eval_code_root
-  bash $eval_code_root/steps/score_aud.sh $mboshi_ref_ali $cwd/$hyp_trans $cwd/$output_dir/score_aud_gold_ali${clustering_suffix}${max_vote_suffix}
+  bash $eval_code_root/steps/score_aud.sh $mboshi_ref_ali $cwd/$hyp_trans $cwd/$output_dir/score${phoneme_suffix}_aud_gold_ali${clustering_suffix}${max_vote_suffix}
   source deactivate
   cd $cwd
 fi
